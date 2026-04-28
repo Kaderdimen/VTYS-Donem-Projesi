@@ -72,3 +72,54 @@ CREATE TABLE SiparisDetaylari (
     FOREIGN KEY (SiparisID) REFERENCES Siparisler(SiparisID),
     FOREIGN KEY (UrunID) REFERENCES Urunler(UrunID)
 );
+
+
+
+CREATE TRIGGER trg_BagisYapildigindaHavuzuGuncelle
+ON Bagislar
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @Miktar DECIMAL(18,2)
+    SELECT @Miktar = Miktar FROM inserted
+
+    -- Havuz tablosundaki bakiyeyi artır
+    UPDATE AskidaYemekHavuzu 
+    SET ToplamBakiye = ToplamBakiye + @Miktar,
+        GuncellemeTarihi = GETDATE()
+END;
+GO
+
+CREATE TRIGGER trg_AskidaSiparisVerildigindeHavuzdanDus
+ON Siparisler
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @Tutar DECIMAL(18,2)
+    DECLARE @IsAskida BIT
+
+    SELECT @Tutar = ToplamTutar, @IsAskida = IsAskida FROM inserted
+
+    IF (@IsAskida = 1)
+    BEGIN
+        -- Havuzda yeterli para var mı kontrolü (Basit mühendislik mantığı)
+        UPDATE AskidaYemekHavuzu 
+        SET ToplamBakiye = ToplamBakiye - @Tutar,
+            GuncellemeTarihi = GETDATE()
+    END
+END;
+GO
+
+-- 1. Görünüm: Aktif Restoranların Menüleri
+CREATE VIEW vw_AktifMenu AS
+SELECT R.RestoranAd, U.UrunAd, U.Fiyat
+FROM Restoranlar R
+JOIN Urunler U ON R.RestoranID = U.RestoranID
+WHERE R.IsActive = 1 AND U.IsActive = 1;
+GO
+
+-- 2. Görünüm: Havuzun Güncel Durumu
+CREATE VIEW vw_HavuzDurumu AS
+SELECT ToplamBakiye, GuncellemeTarihi
+FROM AskidaYemekHavuzu;
+GO
