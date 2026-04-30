@@ -123,3 +123,37 @@ CREATE VIEW vw_HavuzDurumu AS
 SELECT ToplamBakiye, GuncellemeTarihi
 FROM AskidaYemekHavuzu;
 GO
+
+-- 1. ADIM: Restoranlar
+INSERT INTO Restoranlar (RestoranAd, Puan) VALUES 
+('Acıktım Kebap', 4.8), ('Pizza Limanı', 4.2), ('Anne Yemekleri', 4.9), 
+('Burger Dünyası', 3.5), ('Sultan Sofrası', 4.5);
+
+-- 2. ADIM: Kullanıcılar (Müşteriler, İhtiyaç Sahipleri ve Kuryeler)
+INSERT INTO Kullanicilar (Ad, Soyad, Eposta, Telefon, Sifre, Rol) VALUES 
+('Ahmet', 'Yılmaz', 'ahmet@mail.com', '5551112233', '123', 'Musteri'),
+('Kader', 'Dimen', 'kader@mail.com', '5552223344', '123', 'Musteri'),
+('Mehmet', 'Kaya', 'mehmet@mail.com', '5553334455', '123', 'IhtiyacSahibi'),
+('Fatma', 'Çelik', 'fatma@mail.com', '5554445566', '123', 'IhtiyacSahibi'),
+('Can', 'Öz', 'can@mail.com', '5550009988', '123', 'Kurye');
+
+-- 3. ADIM: Ürünler (Hocanın istediği en az 50 ürün için örnekler)
+INSERT INTO Urunler (RestoranID, UrunAd, Fiyat) VALUES 
+(1, 'Adana Kebap', 250), (1, 'Urfa Kebap', 240), (1, 'Lahmacun', 80), (1, 'Ayran', 30),
+(2, 'Karışık Pizza', 200), (2, 'Margarita', 180), (2, 'Kola', 45),
+(3, 'Kuru Fasulye', 120), (3, 'Pilav', 60), (3, 'Cacık', 40);
+
+-- 4. ADIM: Askıda Yemek Havuzunu Başlatma
+-- (Eğer daha önce oluşturmadıysan 1 kez çalıştır)
+INSERT INTO AskidaYemekHavuzu (ToplamBakiye) VALUES (0);
+
+-- 5. ADIM: Bağış Yapma (Trigger sayesinde havuz otomatik dolacak)
+INSERT INTO Bagislar (BagisciID, Miktar) VALUES (1, 1000); -- Ahmet 1000 TL bağışladı
+INSERT INTO Bagislar (BagisciID, Miktar) VALUES (2, 500);  -- Kader 500 TL bağışladı
+
+-- 6. ADIM: Siparişler (Hem Normal Hem Askıda)
+INSERT INTO Siparisler (MusteriID, RestoranID, ToplamTutar, IsAskida) VALUES 
+(1, 1, 330, 0), -- Normal sipariş
+(3, 2, 180, 1), -- Askıdan sipariş (Mehmet ücretsiz yedi, havuzdan düştü)
+(4, 3, 220, 1); -- Askıdan sipariş (Fatma ücretsiz yedi, havuzdan düştü)
+
