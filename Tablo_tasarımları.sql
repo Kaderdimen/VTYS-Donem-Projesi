@@ -157,3 +157,31 @@ INSERT INTO Siparisler (MusteriID, RestoranID, ToplamTutar, IsAskida) VALUES
 (3, 2, 180, 1), -- Askıdan sipariş (Mehmet ücretsiz yedi, havuzdan düştü)
 (4, 3, 220, 1); -- Askıdan sipariş (Fatma ücretsiz yedi, havuzdan düştü)
 
+-----------------------------------------------------------------------------------------
+
+Soru 1: Sipariş Fişi (3 Tabloyu Birleştiren JOIN)
+"Bana müşteri adını, sipariş verdiği restoranı ve toplam tutarı tek bir tabloda göster."
+
+SELECT K.Ad, K.Soyad, R.RestoranAd, S.ToplamTutar, S.SiparisTarihi
+FROM Siparisler S
+INNER JOIN Kullanicilar K ON S.MusteriID = K.KullaniciID
+INNER JOIN Restoranlar R ON S.RestoranID = R.RestoranID;
+
+---------------------------------------------------------------------------------------------
+
+Soru 2: Askıda Yemek Analizi (Analitik Sorgu)
+"Şu ana kadar havuzdan kaç kişi yemek yedi ve havuzun toplam maliyeti ne oldu?"
+
+SELECT COUNT(SiparisID) AS AskidanYiyenKisiSayisi, 
+       SUM(ToplamTutar) AS ToplamHarcananBakiye
+FROM Siparisler
+WHERE IsAskida = 1;
+
+----------------------------------------------------------------------------------------------
+
+Soru 3: Hiç Bağış Yapmayanlar (Subquery - Alt Sorgu)
+ "Sistemde kayıtlı olan ama hiç bağış yapmamış olan müşterileri getir."
+
+SELECT Ad, Soyad FROM Kullanicilar
+WHERE KullaniciID NOT IN (SELECT DISTINCT BagisciID FROM Bagislar WHERE BagisciID IS NOT NULL);
+
